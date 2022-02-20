@@ -5,7 +5,9 @@ export class User {
    @PrimaryGeneratedColumn()
    id!: number;
 
-   @Column()
+   @Column({
+      unique: true
+   })
    username!: string;
 
    @Column({
@@ -15,4 +17,7 @@ export class User {
 
    @Column()
    password!: string;
+
+   @Column()
+   role!: string;
 }

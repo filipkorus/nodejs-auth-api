@@ -4,6 +4,7 @@ import {sign, verify} from 'jsonwebtoken';
 import {getRepository, MoreThanOrEqual} from 'typeorm';
 import {User} from '../entity/user.entity';
 import {Token} from '../entity/token.entity';
+import ROLE from "../helper/roles";
 
 export const Register = async (req: Request, res: Response) => {
    const {username, email, password} = req.body;
@@ -18,7 +19,8 @@ export const Register = async (req: Request, res: Response) => {
    const user = await getRepository(User).save({
       username,
       email,
-      password: await hash(password, 12)
+      password: await hash(password, 12),
+      role: ROLE.USER
    });
 
    const {password: string, ...data} = user;
@@ -171,4 +173,26 @@ export const Auth = async (req: Request, res: Response, next: NextFunction) => {
          message: 'Unauthorized'
       });
    }
+};
+
+export const Role = (...roles: string[]) => {
+   return async (req: Request, res: Response, next: NextFunction) => {
+      // @ts-ignore
+      if (!roles.includes(req.user.role)) {
+         return res.status(403).json({
+            success: false,
+            message: 'Forbidden'
+         });
+      }
+      next();
+   }
+};
+
+export const getUser = async (req: Request, res: Response) => {
+   res.json({
+      success: true,
+      message: '',
+      // @ts-ignore
+      user: req.user
+   });
 };
