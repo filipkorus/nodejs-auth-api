@@ -1,12 +1,12 @@
 {
-  "name": "back2",
+  "name": "nodejs-auth-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cd ./dist && node ./index.js && cd ../",
     "dev": "nodemon src/index.ts",
-    "build": "tsc -p ."
+    "build": "tsc",
+    "start": "cd ./dist && node ./index.js && cd ../"
   },
   "keywords": [],
   "author": "",

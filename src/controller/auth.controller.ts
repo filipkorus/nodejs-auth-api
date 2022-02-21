@@ -164,8 +164,7 @@ export const Auth = async (req: Request, res: Response, next: NextFunction) => {
       }
 
       const {password, ...data} = user;
-      // @ts-ignore
-      req.user = data;
+      (req as any).user = data;
       next();
    } catch (e) {
       res.status(401).json({
@@ -177,8 +176,7 @@ export const Auth = async (req: Request, res: Response, next: NextFunction) => {
 
 export const Role = (...roles: string[]) => {
    return async (req: Request, res: Response, next: NextFunction) => {
-      // @ts-ignore
-      if (!roles.includes(req.user.role)) {
+      if (!roles.includes((req as any).user.role)) {
          return res.status(403).json({
             success: false,
             message: 'Forbidden'
@@ -192,7 +190,6 @@ export const getUser = async (req: Request, res: Response) => {
    res.json({
       success: true,
       message: '',
-      // @ts-ignore
-      user: req.user
+      user: (req as any).user
    });
 };

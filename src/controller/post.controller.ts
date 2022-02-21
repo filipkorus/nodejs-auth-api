@@ -33,8 +33,7 @@ export const canViewPost = async (req: Request, res: Response, next: NextFunctio
       });
    }
 
-   // @ts-ignore
-   if (req.user.id === post.user_id) { // if post is created by user oneself
+   if ((req as any).user.id === post.user_id) { // if post is created by user oneself
       return next();
    }
 
