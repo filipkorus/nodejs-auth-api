@@ -12,7 +12,7 @@ Authentication and authorization token-based API written in Node.js. It can be u
 - rename `example.env` file to `.env`
 - set all credentials in `.env` file
 - rename `example.ormconfig.json` file to `ormconfig.json`
-- set all credentials in `ormconfig.json` file
+- set all database credentials in `ormconfig.json` file
 
 ### Runs in developer environment
 ```
