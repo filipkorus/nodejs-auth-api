@@ -20,4 +20,7 @@ export class User {
 
    @Column()
    role!: string;
+
+   @Column()
+   account_activated!: boolean;
 }

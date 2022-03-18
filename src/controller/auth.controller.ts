@@ -5,6 +5,9 @@ import {getRepository, MoreThanOrEqual} from 'typeorm';
 import {User} from '../entity/user.entity';
 import {Token} from '../entity/token.entity';
 import ROLE from "../helper/roles";
+import {AccountActivationToken} from "../entity/accountActivationToken.entity";
+import {sendMail} from "../helper/mailer";
+import crypto from 'crypto';
 
 export const Register = async (req: Request, res: Response) => {
    const {username, email, password} = req.body;
@@ -16,18 +19,73 @@ export const Register = async (req: Request, res: Response) => {
       });
    }
 
+   let userExists = await getRepository(User).find({ username });
+
+   if (userExists.length > 0) { // check if user with given username already exists
+      return res.json({
+         success: false,
+         message: 'user with that username already exists'
+      });
+   }
+
+   userExists = await getRepository(User).find({ email });
+
+   if (userExists.length > 0) { // check if user with given email already exists
+      return res.json({
+         success: false,
+         message: 'user with that email already exists'
+      });
+   }
+
    const user = await getRepository(User).save({
       username,
       email,
       password: await hash(password, 12),
-      role: ROLE.USER
+      role: ROLE.USER,
+      account_activated: false
    });
+
+   const emailConfirmationToken = crypto.randomBytes(48).toString('hex');
+   await getRepository(AccountActivationToken).save({
+      user_id: user.id,
+      token: emailConfirmationToken
+   });
+
+   const activationUrl = `${process.env.FRONTEND_URL}${process.env.FRONTEND_ACCOUNT_ACTIVATION_PAGE_URI}/${emailConfirmationToken}`;
+   await sendMail(
+      '"filipkorus.com notification" <noreply@filipkorus.com>',
+      email,
+      'account activation',
+      `click link to activate your account: ${activationUrl}`,
+      `<p>click <a target="_blank" href="${activationUrl}">link</a> to activate your account</p>`
+   );
 
    const {password: string, ...data} = user;
    res.json({
       success: true,
-      message: 'user created successfully',
+      message: 'user created successfully, check your email to activate account before logging in',
       user: data
+   });
+};
+
+export const ActivateAccount = async (req: Request, res: Response) => {
+   const token = await getRepository(AccountActivationToken).findOne({
+      token: req.params.token
+   });
+
+   if (!token) {
+      return res.status(400).json({
+         success: false,
+         message: 'Account activation token is not valid'
+      });
+   }
+
+   await getRepository(User).update({ id: token.user_id },{ account_activated: true });
+   await getRepository(AccountActivationToken).delete({ id: token.id });
+
+   return res.json({
+      success: true,
+      message: 'Account activation succeeded'
    });
 };
 
@@ -49,6 +107,13 @@ export const Login = async (req: Request, res: Response) => {
       return res.status(400).json({
          success: false,
          message: 'Invalid credentials'
+      });
+   }
+
+   if (!user.account_activated) {
+      return res.status(400).json({
+         success: false,
+         message: 'Activate your account before logging in'
       });
    }
 

@@ -33,7 +33,7 @@ export const canViewPost = async (req: Request, res: Response, next: NextFunctio
       });
    }
 
-   if ((req as any).user.id === post.user_id) { // if post is created by user oneself
+   if ((req as any).user.id === post.user_id) { // user can view post only when it's created by oneself
       return next();
    }
 

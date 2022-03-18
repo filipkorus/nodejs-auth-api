@@ -1,10 +1,19 @@
 import express from 'express';
-import {Auth, Register, Login, Logout, Refresh, getUser} from './controller/auth.controller';
+import {
+   Auth,
+   Register,
+   Login,
+   Logout,
+   Refresh,
+   getUser,
+   ActivateAccount
+} from './controller/auth.controller';
 import {canViewPost, getPostById} from "./controller/post.controller";
 import {changeRole} from "./controller/admin.controller";
 
 const auth = express.Router()
    .post('/register', Register)
+   .get('/activate-account/:token', ActivateAccount)
    .post('/login', Login)
    .post('/logout', Logout)
    .post('/refresh', Refresh)
