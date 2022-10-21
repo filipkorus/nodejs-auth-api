@@ -1,0 +1,38 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "mysql"
+	url      = env("DB_URL")
+}
+
+model User {
+	id                Int      @id @default(autoincrement())
+	username          String   @unique @db.VarChar(30)
+	email             String   @unique
+	password          String   @db.VarChar(80)
+	role              String   @db.VarChar(20)
+	banned            Boolean  @default(false)
+	accountActivated  Boolean  @default(false)
+	joinedAt          DateTime @default(now())
+	tokens            AuthToken[]
+	activationToken   ActivationToken?
+}
+
+model AuthToken {
+	id                Int      @id @default(autoincrement())
+	token             String   @unique @db.VarChar(150)
+	createdAt         DateTime @default(now())
+	expiresAt         DateTime
+	user              User     @relation(fields: [userId], references: [id])
+	userId            Int
+}
+
+model ActivationToken {
+	id                Int      @id @default(autoincrement())
+	token             String   @unique @db.VarChar(60)
+	createdAt         DateTime @default(now())
+	user              User     @relation(fields: [userId], references: [id])
+	userId            Int      @unique
+}

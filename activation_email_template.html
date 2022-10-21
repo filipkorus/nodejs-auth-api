@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .btn:hover {
+            background: #767676;
+        }
+
+        .btn {
+            background-color: #222;
+            border: 0;
+            border-radius: .3rem;
+            box-shadow: none;
+            color: #fff;
+            cursor: pointer;
+            display: inline-block;
+            font-size: .875rem;
+            font-weight: 800;
+            line-height: 1;
+            padding: 1em 2em;
+            text-shadow: none;
+             transition: background .2s;
+            font-family: Libre Franklin, Helvetica Neue, helvetica, arial, sans-serif;
+            min-width: 100%;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .border {
+            border: #222 dashed 2px;
+        }
+
+        .container {
+            padding: 1rem;
+            max-width: 50vw;
+        }
+
+        .center {
+            margin: auto;
+            width: 50%;
+        }
+
+        .text-danger {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container center border">
+        <h2 style="margin-top: 0;">How are you, {{username}}?</h2>
+        <p>Thank you for creating your account!</p>
+        <p>To activate your account click button below.</p>
+        <p><b class="text-danger">Attention: </b>By activating the account, you hereby give consent for your personal e-mail
+            to be processed by <i>Filip Korus</i>
+            for sending notifications.<br>
+            If you have any questions, please contact the administrator - <a href="mailto:admin@fkor.us?subject=Nodejs Auth API - question">admin@fkor.us</a>.
+        </p>
+        <a href="{{activationUrl}}" target="blank" style="cursor:pointer;">
+            <button class="btn">Activate account</button>
+        </a>
+    </div>
+</body>
+
+</html>
