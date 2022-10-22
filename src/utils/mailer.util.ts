@@ -18,7 +18,9 @@ export default class Mailer {
 					pass: process.env.SMTP_PASS
 				}
 			});
-		} catch (e) {}
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	/**
@@ -43,6 +45,7 @@ export default class Mailer {
 			});
 			return true;
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 	}
