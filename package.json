@@ -24,15 +24,22 @@
     "@types/jsonwebtoken": "^8.5.8",
     "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
+    "concurrently": "^7.5.0",
+    "config": "^3.3.8",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dayjs": "^1.11.6",
     "dotenv": "^16.0.1",
+    "electron": "^21.2.0",
     "express": "^4.17.1",
+    "express-fileupload": "^1.4.0",
     "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.7.5",
     "prisma": "^4.3.1",
     "striptags": "^3.2.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "wait-on": "^6.0.1"
   },
   "description": ""
 }

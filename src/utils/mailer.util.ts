@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 import striptags from 'striptags';
+import config from 'config';
+import {logError} from './logger';
+import * as Path from "path";
 
 export default class Mailer {
 	private transporter: any;
@@ -10,43 +13,47 @@ export default class Mailer {
 	constructor() {
 		try {
 			this.transporter = nodemailer.createTransport({
-				host: process.env.SMTP_ENDPOINT,
+				host: config.get<string>("SMTP_ENDPOINT"),
 				port: 465,
 				secure: true,
 				auth: {
-					user: process.env.SMTP_USER,
-					pass: process.env.SMTP_PASS
+					user: config.get<string>("SMTP_USERNAME"),
+					pass: config.get<string>("SMTP_PASSWORD")
 				}
 			});
 		} catch (e) {
-			console.error(e);
+			logError(e);
 		}
 	}
 
 	/**
 	 * Sends email.
 	 *
-	 * @param from {string} Mail sender. e.g. `John Doe <noreply@example.com>`
-	 * @param to {string} Mail receiver.
-	 * @param subject {string} Mail subject.
-	 * @param html {string} Mail structure.
-	 * @param attachments {list[object]} File attachments.
+	 * @param email {Email} Email object.
 	 * @returns {boolean} Boolean indicating success.
 	 */
-	async send(from: string, to: string, subject: string, html: string, attachments: {}[] = []) {
+	async send(email: Email) {
 		try {
 			await this.transporter.sendMail({
-				from,
-				to,
-				subject,
-				text: striptags(html),
-				html,
-				attachments
+				from: email.from,
+				to: email.to,
+				subject: email.subject,
+				text: striptags(email.html),
+				html: email.html,
+				attachments: email.attachments || []
 			});
 			return true;
 		} catch (e) {
-			console.error(e);
+			logError(e);
 			return false;
 		}
 	}
 }
+
+export interface Email {
+	from: string;
+	to: string;
+	subject: string;
+	html: string;
+	attachments?: {filename: string, path: string}[];
+};

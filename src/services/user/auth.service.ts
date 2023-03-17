@@ -1,11 +1,12 @@
 import {PrismaClient} from '@prisma/client';
 import {compare, hash} from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import ROLE from '../utils/roles.util';
-import Mailer from '../utils/mailer.util';
+import ROLE from '../../utils/roles.util';
+import Mailer from '../../utils/mailer.util';
 import {sign, verify} from 'jsonwebtoken';
 import fs from 'fs';
-import CONFIG from '../config';
+import config from 'config';
+import {Email} from '../../utils/mailer.util';
 
 const prisma = new PrismaClient();
 
@@ -15,9 +16,9 @@ const prisma = new PrismaClient();
  * @returns {boolean} which indicates if username is already used.
  * @param username {string} Username to be checked.
  */
-export const usernameExists = async (username: string): Promise<boolean> => {
+export const usernameExists = async (username: string) => {
 	try {
-		return (await prisma.user.count({where:{username}})) > 0;
+		return await prisma.user.count({where:{username}}) > 0;
 	} catch (e) {
 		return true;
 	}
@@ -31,7 +32,7 @@ export const usernameExists = async (username: string): Promise<boolean> => {
  */
 export const emailExists = async (email: string): Promise<boolean> => {
 	try {
-		return (await prisma.user.count({where:{email}})) > 0;
+		return await prisma.user.count({where:{email}}) > 0;
 	} catch (e) {
 		return true;
 	}
@@ -75,19 +76,21 @@ export const createUser = async ({username, email, password}) => {
 	/* read activation mail template */
 	let html = null;
 	try {
-		html = fs.readFileSync(CONFIG.activationEmailTemplatePath, 'utf-8');
+		html = fs.readFileSync(config.get<string>("ACTIVATION_EMAIL_TEMPLATE_PATH"), 'utf-8');
 	} catch (e) {}
 
-	const activationUrl = `${process.env.FRONTEND_ACCOUNT_ACTIVATION_PAGE_URL}?token=${emailConfirmationToken}`;
+	const activationUrl = `${config.get<string>("FRONTEND_ACCOUNT_ACTIVATION_PAGE_URL")}?token=${emailConfirmationToken}`;
 
 	/* send activation email */
 	const mailer = new Mailer();
-	await mailer.send(
-		process.env.EMAIL_SENDER,
-		email,
-		'Account activation',
-		html == null ? `<p>click <a target="blank" href="${activationUrl}">link</a> to activate your account</p>` : html.replace('{{username}}', username).replace('{{activationUrl}}', activationUrl)
-	);
+	const emailObj: Email = {
+		from: config.get<string>("EMAIL_SENDER"),
+		to: email,
+		subject: 'Account activation',
+		html: html == null ? `<p>click <a target="blank" href="${activationUrl}">link</a> to activate your account</p>` : html.replace('{{username}}', username).replace('{{activationUrl}}', activationUrl)
+	};
+
+	await mailer.send(emailObj);
 
 	return true;
 };
@@ -173,8 +176,8 @@ export const generateRefreshToken = async (userId: number) => {
 	const refreshToken = sign({
 			id: userId
 		},
-		`${process.env.REFRESH_TOKEN_SECRET}`,
-		{expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN}
+		`${config.get<string>("REFRESH_TOKEN")}`,
+		{expiresIn:config.get<string>("REFRESH_TOKEN_TTL")}
 	);
 
 	// save refresh token to DB
@@ -196,7 +199,7 @@ export const generateRefreshToken = async (userId: number) => {
 /**
  * Returns refresh token object from the database.
  *
- * @returns {object|null} Refresh token record or null if error.
+ * @returns {object|null} RefreshTokenHandler token record or null if error.
  * @param userId {number} User's ID.
  */
 export const getRefreshToken = async (userId: number) => {
@@ -242,7 +245,7 @@ export const deleteExpiredRefreshTokens = async () => {
  */
 export const verifyRefreshToken = (refreshToken: string) => {
 	try {
-		return verify(refreshToken, `${process.env.REFRESH_TOKEN_SECRET}`);
+		return verify(refreshToken, config.get<string>("REFRESH_TOKEN"));
 	} catch (e) {
 		return null;
 	}
@@ -257,8 +260,8 @@ export const verifyRefreshToken = (refreshToken: string) => {
 export const generateAccessToken = (userId: number) => {
 	return sign(
 		{id: userId},
-		`${process.env.ACCESS_TOKEN_SECRET}`,
-		{expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN}
+		config.get<string>("ACCESS_TOKEN"),
+		{expiresIn: config.get<string>("ACCESS_TOKEN_TTL")}
 	);
 };
 
@@ -270,7 +273,7 @@ export const generateAccessToken = (userId: number) => {
  */
 export const verifyAccessToken = (accessToken: string) => {
 	try {
-		return verify(accessToken, `${process.env.ACCESS_TOKEN_SECRET}`);
+		return verify(accessToken, config.get<string>("ACCESS_TOKEN"));
 	} catch (e) {
 		return null;
 	}
